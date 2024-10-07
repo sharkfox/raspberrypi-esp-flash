@@ -121,6 +121,16 @@ it waits for the next connect.
         help='print more diagnostic messages (option can be given multiple times)',
         default=0)
 
+    parser.add_argument(
+        '--dtr-gpio',
+        help='gpio pin with SoC/BCM numbering for DTR signal, default: %(default)s',
+        default=10)
+
+    parser.add_argument(
+        '--rts-gpio',
+        help='gpio pin with SoC/BCM numbering for RTS signal, default: %(default)s',
+        default=22)
+
     args = parser.parse_args()
 
     if args.verbosity > 3:
@@ -147,6 +157,22 @@ it waits for the next connect.
     except serial.SerialException as e:
         logging.error("Could not open serial port {}: {}".format(ser.name, e))
         sys.exit(1)
+
+    import RPi.GPIO as GPIO
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(args.rts_gpio, GPIO.OUT)
+    GPIO.setup(args.dtr_gpio, GPIO.OUT)
+
+    def _update_rts_state(self):
+        GPIO.output(args.rts_gpio, not self._rts_state)
+
+    def _update_dtr_state(self):
+        GPIO.output(args.dtr_gpio, not self._dtr_state)
+
+    # patch RTS/DTR control functions
+    ser.__class__._update_dtr_state = _update_dtr_state
+    ser.__class__._update_rts_state = _update_rts_state
 
     logging.info("Serving serial port: {}".format(ser.name))
     settings = ser.get_settings()
@@ -186,3 +212,4 @@ it waits for the next connect.
             logging.error(str(msg))
 
     logging.info('--- exit ---')
+    GPIO.cleanup()
