@@ -187,8 +187,8 @@ it waits for the next connect.
             client_socket, addr = srv.accept()
             logging.info('Connected by {}:{}'.format(addr[0], addr[1]))
             client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            ser.rts = True
-            ser.dtr = True
+            ser.rts = False
+            ser.dtr = False
             # enter network <-> serial loop
             r = Redirector(
                 ser,
