@@ -131,6 +131,11 @@ it waits for the next connect.
         help='gpio pin with SoC/BCM numbering for RTS signal, default: %(default)s',
         default=22)
 
+    parser.add_argument(
+        '--baudrate',
+        help='baudrate to set initially, default: %(default)s',
+        default=115200)
+
     args = parser.parse_args()
 
     if args.verbosity > 3:
@@ -189,6 +194,7 @@ it waits for the next connect.
             client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             ser.rts = False
             ser.dtr = False
+            ser.baudrate = args.baudrate
             # enter network <-> serial loop
             r = Redirector(
                 ser,
